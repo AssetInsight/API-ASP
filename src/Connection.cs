@@ -83,7 +83,6 @@ namespace AssetInsight.API {
 					// Convert Object to JSON then attach as string to Content of POST Request
 					StringContent jsonQuery = new StringContent(JsonConvert.SerializeObject(parameters));
 					connection.Content = jsonQuery;
-					Console.WriteLine(JsonConvert.SerializeObject(parameters));
 				}
 
 				// Send Request
@@ -185,7 +184,7 @@ namespace AssetInsight.API {
 		}
 
 		/**
-		 * Checks to see if the user already has an account with Asset Insight
+		 * Creates a new account for the user if one does not already exist
 		 * 
 		 * @params 
 		 *   mail - the email to see if it has an account associated
@@ -204,16 +203,19 @@ namespace AssetInsight.API {
 		}
 
 		/**
-		 * Checks to see if the user already has an account with Asset Insight
+		 * Creates a new analysis request for processing
 		 * 
 		 * @params 
-		 *   mail - the email to see if it has an account associated
-		 * @return
-		 *   id: Asset Insight user id
-		 *   email: email of user
+		 *   asset - object containing the relevant inputs for the asset to be analyzed
+         *   user - the id of the user to associate this analysis
+		 * @return - object of the following
+		 *   analysis: the id of the analysis
+		 *   generation: the number of seconds it took to process
+         *   inputs: the assumptions for the analysis
+         *   results: the results of the analysis
 		 */
-		public IEnumerable<dynamic> processNewAnalysis(object asset) {
-			dynamic results = this.requestInformation("POST", "process/analysis", asset).Result;
+		public IEnumerable<dynamic> processNewAnalysis(object asset, string user = null) {
+			dynamic results = this.requestInformation("POST", "process/analysis", new {user = user, asset = asset}).Result;
 
 			return results;
 		}

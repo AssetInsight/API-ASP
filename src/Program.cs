@@ -38,14 +38,15 @@ namespace APIExample {
 					engines = "My Custom Program",
 				},
 				inspections = new Dictionary<int, object> {
-										{10, new {hours = 250, cycles = 175}},
-										{11, new {hours = 3250, cycles = 2300}},
-								},
+					{10, new {hours = 250, cycles = 175}},
+					{11, new {hours = 3250, cycles = 2300}},
+				},
 			};
 
 			dynamic results = api.processNewAnalysis(asset);
 			Console.WriteLine("{0}", results);
 
+			// Pause Console
 			Console.ReadKey();
 		}
 	}

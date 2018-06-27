@@ -42,14 +42,20 @@ namespace APIExample {
 					engines = "My Custom Program",
 				},
 				inspections = new Dictionary<int, object> {
-										{10, new {hours = 250, cycles = 175}},
-										{11, new {hours = 3250, cycles = 2300}},
-								},
+					{10, new {hours = 250, cycles = 175}},
+					{11, new {hours = 3250, cycles = 2300}},
+				},
 			};
 
+			/* Passing the user ID as a second parameter allows
+			 * the analysis to be taged to another user with you
+			 * as the referrer.  This will allow Asset Insight to
+			 * better inform you about the activity you are generating
+			 */
 			dynamic results = api.processNewAnalysis(asset);
 			Console.WriteLine("{0}", results);
 
+			// Pause Console
 			Console.ReadKey();
 		}
 	}

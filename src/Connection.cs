@@ -169,6 +169,24 @@ namespace AssetInsight.API {
 		}
 
 		/**
+		 * Gets currently supported required/editable inspections for all assets
+		 * 
+		 * @return - Keyed by id
+		 *   id: inspection id
+		 *   description: human readable name
+		 *   hours: boolean of if interval accepted
+		 *   cycles: boolean of if interval accepted
+		 *   date: boolean of if interval accepted
+		 *   asset_id: identifying id of the asset model
+		 *   version_name: human readable sub-version
+		 */
+		public IEnumerable<dynamic> getInspections() {
+			dynamic results = this.requestInformation("GET", "request/inspections").Result;
+
+			return results;
+		}
+
+		/**
 		 * Checks to see if the user already has an account with Asset Insight
 		 * 
 		 * @params 

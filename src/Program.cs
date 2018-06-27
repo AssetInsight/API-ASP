@@ -16,6 +16,10 @@ namespace APIExample {
 			dynamic supported = api.getSupported();
 			Console.WriteLine("{0}", supported);
 
+			// Get List of ALL REQUIRED Inspections for ALL Assets
+			dynamic inspections = api.getInspections();
+			Console.WriteLine("{0}", inspections);
+
 			// Get Asset Requirements
 			dynamic requirements = api.getAssetRequirements(566, 1);
 			Console.WriteLine("{0}", requirements);

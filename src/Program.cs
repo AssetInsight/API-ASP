@@ -41,10 +41,10 @@ namespace APIExample {
 					airframe = "msp",
 					engines = "My Custom Program",
 				},
-                modifications = new Dictionary<int, object> { 
-                    {3, new {included = 250}}, 
-                    {570, new {included = 3250}}, 
-                },
+                                modifications = new Dictionary<int, object> { 
+                                        {3, new {included = 250}}, 
+                                        {570, new {included = 3250}}, 
+                                },
 				inspections = new Dictionary<int, object> {
 					{10, new {hours = 250, cycles = 175}},
 					{11, new {hours = 3250, cycles = 2300}},

@@ -42,8 +42,7 @@ namespace APIExample {
 					engines = "My Custom Program",
 				},
                                 modifications = new Dictionary<int, object> { 
-                                        {3, new {included = 250}}, 
-                                        {570, new {included = 3250}}, 
+                                        {3, new {id = 3, description = "Proline 21 single IFIS", installed = true}},
                                 },
 				inspections = new Dictionary<int, object> {
 					{10, new {hours = 250, cycles = 175}},

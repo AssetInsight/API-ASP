@@ -35,6 +35,7 @@ namespace APIExample {
 				model = 566,
 				version = 1,
 				manufacture = 1199923200,
+				delivery = 1199923200,
 				serial = "example",
 				tail = "example",
 				coverage = new {

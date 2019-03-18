@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file
  * Asset Insight Helper Class for Connecting to Asset Insight API.
  *
@@ -20,19 +20,22 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace AssetInsight.API {
-	class establishConnection {
-		HttpClient client = new HttpClient();
+namespace AssetInsight.API
+{
+    class establishConnection
+    {
+        HttpClient client = new HttpClient();
 
-		protected string publicKey = "Your Public Key"; // TODO: Insert Your Public Key
-		protected string privateKey = "Your Private Key"; // TODO: Insert Your Private Key
-		protected string url = "";
-		public string apiBase = "https://api.assetinsight.com/api/v1/";
+        protected string siteUsername        = "username"; // TODO: Insert Your Website Username
+        protected string sitePassword        = "password"; // TODO: Insert Your Website Password
+        protected string personalAccessToken = ""; // TODO: May be used as a replacement for a username and password.  Obtained in your settings after logging into assetinsight.com
+        protected string url                 = "";
+        public string apiBase                = "https://backend.assetinsight.com/api/v1/";
 
-		public dynamic results { get; set; }
+        public dynamic results { get; set; }
 
 
-		/**
+        /**
 		 * Execute RESTful API Get Request
 		 * 
 		 * @params 
@@ -43,82 +46,102 @@ namespace AssetInsight.API {
 		 * @return
 		 *   results: JSON Object Converted into a C# Object
 		 */
-		private async Task<IEnumerable<dynamic>> requestInformation(string method = "GET", string endpoint = "connection", dynamic parameters = null, string format = "json", string accessToken = null) {
-			// Check if access token has expired
-			if (accessToken == null) {
-				accessToken = GetAccessToken();
-			}
+        private async Task<IEnumerable<dynamic>> requestInformation(string method = "GET", string endpoint = "connection", dynamic parameters = null, string format = "json", string accessToken = null)
+        {
+            // Check if access token has expired
+            if (accessToken == null && (endpoint != "login" && endpoint != "connection"))
+            {
+                accessToken = GetAccessToken();
+            }
 
-			// Establish Connection Object
-			bool content = false;
-			string url = null;
-			dynamic connectionType = null;
+            // Establish Connection Object
+            bool content           = false;
+            string url             = null;
+            dynamic connectionType = null;
 
-			// Set Method Type
-			switch (method.ToUpper()) {
-				case "GET":
-					connectionType = HttpMethod.Get;
-					url = apiBase + endpoint + "?_format=" + format + "&" + parameters;
-					break;
-				case "POST":
-					content = true;
-					connectionType = HttpMethod.Post;
-					url = apiBase + endpoint + "?_format=" + format;
-					break;
-			}
+            // Set Method Type
+            switch (method.ToUpper())
+            {
+                case "GET":
+                    connectionType = HttpMethod.Get;
+                    url = apiBase + endpoint + "?" + parameters;
+                    break;
+                case "POST":
+                    content = true;
+                    connectionType = HttpMethod.Post;
+                    url = apiBase + endpoint;
+                    break;
+            }
 
 
-			var connection = new HttpRequestMessage(
-					connectionType,
-					string.Format(url)
-			);
+            var connection = new HttpRequestMessage(
+                    connectionType,
+                    string.Format(url)
+            );
 
-			// Add Headers
-			connection.Headers.Add("Authorization", "Basic " + accessToken);
-			connection.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            // Add Headers
+            connection.Headers.Add("Authorization", "Bearer " + accessToken);
+            connection.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-			try {
-				// Set Body if POST
-				if (content) {
-					// Convert Object to JSON then attach as string to Content of POST Request
-					StringContent jsonQuery = new StringContent(JsonConvert.SerializeObject(parameters));
-					connection.Content = jsonQuery;
-				}
+            try
+            {
+                // Set Body if POST
+                if (content)
+                {
+                    // Convert Object to JSON then attach as string to Content of POST Request
+                    StringContent jsonQuery = new StringContent(JsonConvert.SerializeObject(parameters));
+                    connection.Content      = jsonQuery;
+                }
 
-				// Send Request
-				HttpResponseMessage response = await client.SendAsync(connection);
+                // Send Request
+                HttpResponseMessage response = await client.SendAsync(connection);
 
-				// Deserialize Response
-				dynamic json = await response.Content.ReadAsStringAsync();
-				results = JsonConvert.DeserializeObject<dynamic>(json);
+                // Deserialize Response
+                dynamic json = await response.Content.ReadAsStringAsync();
+                results      = JsonConvert.DeserializeObject<dynamic>(json);
 
-				if (response.IsSuccessStatusCode) {
-					return results;
-				}
-				else {
-					Console.WriteLine("{0} ({1}): {2}", (int)response.StatusCode, response.ReasonPhrase, results.message);
-					return null;
-				}
-			}
-			catch (Exception e) {
-				Console.WriteLine(e.Message);
-			}
+                if (response.IsSuccessStatusCode)
+                {
+                    return results;
+                }
+                else
+                {
+                    Console.WriteLine("{0} ({1}): {2}", (int)response.StatusCode, response.ReasonPhrase, results.message);
+                    return null;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		/**
+        /**
 		 * Gets Authorization Code
 		 * 
 		 * @return - Encoded Key Pair to be sent for verification
 		 */
-		private string GetAccessToken() {
-			// TODO: UPDATE TO REQUEST TOKEN FROM SERVER
-			var basicAuth = Convert.ToBase64String(new UTF8Encoding().GetBytes(publicKey + ":" + privateKey));
-			return basicAuth;
-		}
+        private string GetAccessToken()
+        {
+            if (!String.IsNullOrEmpty(personalAccessToken))
+            {
+                return personalAccessToken;
+            } else
+            {
+                dynamic results = this.requestInformation("POST", "login", new { username = siteUsername, password = sitePassword }).Result;
 
-		/**
+                if (results != null)
+                {
+                    return results.access_token;
+                }
+
+                throw new ArgumentException("No access token was returned");
+            }
+        }
+
+        /**
 		 * Get the required input fields for a given model and sub-version
 		 * 
 		 * @params 
@@ -145,13 +168,14 @@ namespace AssetInsight.API {
 		 *     cycles: last known completion or current time as integer
 		 *     date: last known completion or current time as timestamp        *     
 		 */
-		public IEnumerable<dynamic> getAssetRequirements(int asset_id, int version_id) {
-			dynamic results = this.requestInformation("GET", "request/assetRequirements", "model=" + asset_id + "&version=" + version_id).Result;
+        public IEnumerable<dynamic> getAssetRequirements(int asset_id, int version_id)
+        {
+            dynamic results = this.requestInformation("GET", "request/assetRequirements", "model=" + asset_id + "&version=" + version_id).Result;
 
-			return results;
-		}
+            return results;
+        }
 
-		/**
+        /**
 		 * Gets currently supported asset groups available for analysis
 		 * 
 		 * @return - Keyed by id
@@ -162,13 +186,14 @@ namespace AssetInsight.API {
 		 *   version_id: the model sub-version ID
 		 *   version_name: human readable sub-version
 		 */
-		public IEnumerable<dynamic> getSupported() {
-			dynamic results = this.requestInformation("GET", "request/supported", "type=model").Result;
+        public IEnumerable<dynamic> getSupported()
+        {
+            dynamic results = this.requestInformation("GET", "request/supported", "type=model").Result;
 
-			return results;
-		}
+            return results;
+        }
 
-		/**
+        /**
 		 * Gets currently supported required/editable inspections for all assets
 		 * 
 		 * @return - Keyed by id
@@ -180,13 +205,14 @@ namespace AssetInsight.API {
 		 *   asset_id: identifying id of the asset model
 		 *   version_name: human readable sub-version
 		 */
-		public IEnumerable<dynamic> getInspections() {
-			dynamic results = this.requestInformation("GET", "request/inspections").Result;
+        public IEnumerable<dynamic> getInspections()
+        {
+            dynamic results = this.requestInformation("GET", "request/inspections").Result;
 
-			return results;
-		}
+            return results;
+        }
 
-		/**
+        /**
 		 * Checks to see if the user already has an account with Asset Insight
 		 * 
 		 * @params 
@@ -195,13 +221,14 @@ namespace AssetInsight.API {
 		 *   id: Asset Insight user id
 		 *   email: email of user
 		 */
-		public IEnumerable<dynamic> getUserConfirmation(string email) {
-			dynamic results = this.requestInformation("GET", "request/userConfirmation", "email=" + email).Result;
+        public IEnumerable<dynamic> getUserConfirmation(string email)
+        {
+            dynamic results = this.requestInformation("GET", "request/userConfirmation", "email=" + email).Result;
 
-			return results;
-		}
+            return results;
+        }
 
-		/**
+        /**
 		 * Creates a new account for the user if one does not already exist
 		 * 
 		 * @params 
@@ -210,17 +237,14 @@ namespace AssetInsight.API {
 		 *   id: Asset Insight user id
 		 *   email: email of user
 		 */
-		public IEnumerable<dynamic> processNewAccount(string email) {
-			object user = new {
-				email = email
-			};
+        public IEnumerable<dynamic> processNewAccount(string checkEmail)
+        {
+            dynamic results = this.requestInformation("POST", "process/newAccount", new { email = checkEmail }).Result;
 
-			dynamic results = this.requestInformation("POST", "process/newAccount", user).Result;
+            return results;
+        }
 
-			return results;
-		}
-
-		/**
+        /**
 		 * Creates a new analysis request for processing
 		 * 
 		 * @params 
@@ -232,10 +256,11 @@ namespace AssetInsight.API {
          *   inputs: the assumptions for the analysis
          *   results: the results of the analysis
 		 */
-		public IEnumerable<dynamic> processNewAnalysis(object asset, string user = null) {
-			dynamic results = this.requestInformation("POST", "process/analysis", new {user = user, asset = asset}).Result;
+        public IEnumerable<dynamic> processNewAnalysis(object assetInputs, string user = null)
+        {
+            dynamic results = this.requestInformation("POST", "process/analysis", new { user = user, asset = assetInputs }).Result;
 
-			return results;
-		}
-	}
+            return results;
+        }
+    }
 }

@@ -55,11 +55,12 @@ namespace APIExample
                 },
             };
 
-            /* Passing the user ID as a second parameter allows
-			 * the analysis to be taged to another user with you
-			 * as the referrer.  This will allow Asset Insight to
-			 * better inform you about the activity you are generating
-			 */
+            /** 
+	     * Passing the user ID as a second parameter allows
+	     * the analysis to be taged to another user with you
+	     * as the referrer.  This will allow Asset Insight to
+	     * better inform you about the activity you are generating
+	     **/
             dynamic results = api.processNewAnalysis(asset);
             Console.WriteLine("{0}", results);
 
